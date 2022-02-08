@@ -1,0 +1,127 @@
+TASK 1: Prediction using supervised ML Description: In this task we will use the Python language to predict the expected scores of students based on the number of hours studied. Dataset given was a simple liner regression that involves two variables.
+
+Step 1
+
+#importing required libraries
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+Step 2
+
+#reading data from source
+dataset=pd.read_csv("http://bit.ly/w-data")
+dataset.head(10)
+
+Step 3
+
+#Visualizing the data for insights
+dataset.info()
+
+Step 4
+
+#Describing statistical properties of the data
+dataset.describe()
+
+Step 5
+
+#Creating a Scatter plot diagram for Hours Vs Scores of Students
+dataset.plot(x="Hours", y="Scores", style= "*")
+plt.xlabel("Hours Studied")
+plt.ylabel("Scores obtained")
+plt.title("Scatter plot for Hours studied Vs. Scores obtained by students")
+plt.show()
+
+Step 6
+
+#Divivding the data into attributes and labels
+x=dataset.iloc[:,:-1]
+x.head(10)
+
+Step 7
+
+y=dataset.iloc[:,1]
+y.head(10)
+
+Step 8
+
+#Splitting the data into testing and training sets
+
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2, random_state=0)
+
+#test size=0.2 means 20 percent of the data is used for testing
+Step 9
+
+#Plotting of regression line
+
+model=LinearRegression()
+model.fit(x_train,y_train)
+y_predicted = model.predict(x_train)
+Step 10
+
+#Regression line equation
+print(model.intercept_)
+print(model.coef_)
+lr_regression=model.coef_*x_train+model.intercept_
+print("The equation of the fitted regressionline is:")
+print("Score=", model.coef_,"Hours=", model.intercept_)
+
+Step 11
+
+#Plotting the Regression line 
+plt.plot(x,y,"o",color="b")
+plt.plot(x_train,lr_regression, color="r")
+plt.xlabel("Hours")
+plt.ylabel("Scores")
+plt.title("Plot of fitted regression line for the given data")
+
+Step 12
+
+#Predicting scores based on testing the dataset
+y_pred=model.predict(x_test)
+print("The predicted scores based on the testing dataset is:", y_pred)
+
+Step 13
+
+#Checking model's accuracy
+model.score(x_test,y_test)
+
+Step 14
+
+#Prediction of scores with 5 hours study time
+model.predict([[5]])
+
+Step 15
+
+#Comparing the actual and predicted scores of students
+df=pd.DataFrame({"Actual": y_test,"Predicted":y_pred})
+df
+
+Step 16
+
+#Bar diagram showing the actual and predicted scores
+df.plot(kind="bar", color=("g","y"))
+plt.xlabel("Index")
+plt.ylabel("Scores")
+plt.title("Comparison between actual and predicted values of study based on the number of hours")
+plt.show()
+
+Step 17
+
+#Evaluating the model performance and predicting the accuracy of the model
+from sklearn import metrics
+print("Mean Absolute Error:",metrics.mean_absolute_error(y_test,y_pred)) 
+print("Mean Squared Error:",metrics.mean_squared_error(y_test,y_pred))
+print("Root Squared Error:",np.sqrt(metrics.mean_squared_error(y_test,y_pred)))
+print("R-2:",metrics.r2_score(y_test,y_pred))
+
+Step 18
+
+#Prediction of the percentage score obtained by a student for 9.25 hours per day
+import warnings
+warnings.filterwarnings("ignore")
+
+
+print("The expected percentage score of a student who studies 9.25 hours per day is:", model.predict([[9.25]]))
