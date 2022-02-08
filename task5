@@ -1,0 +1,86 @@
+Task 5 : Prediction using Decision Tree Algorithm
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns 
+from IPython.display import Image
+import pydotplus
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix,classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_curve, roc_auc_score,auc
+import os
+import graphviz
+
+iris  =pd.read_csv('Iris.csv')
+print('Shape of the Dataset-->',iris.shape)
+print('dtypes of the Dataset-->',iris.dtypes)
+iris.head(5)
+
+sns.heatmap(iris.isnull(), cbar=False)
+print(iris.isnull().sum() )
+
+plt.figure(figsize=(20, 10))
+X=iris.drop(['Species','Id'], axis=1)
+# i: index
+for i, col in enumerate(X.columns):
+    plt.subplot(3, 4, i+1)
+    x = iris[col]
+    sns.boxplot(x)
+    plt.title(col)
+    
+# Plotting species for Sepal
+sns.FacetGrid(iris, hue="Species", size=4) \
+   .map(plt.scatter, "SepalLengthCm", "SepalWidthCm") \
+   .add_legend();
+   
+fig=plt.gcf()
+fig.set_size_inches(10,7)
+fig=sns.boxplot(x='Species',y='SepalWidthCm',data=iris)
+fig=sns.stripplot(x='Species',y='SepalWidthCm',data=iris,jitter=True,edgecolor='gray')
+
+fig = plt.figure(figsize=(8,5))
+
+plt.scatter(x = iris.Id, y = iris.SepalLengthCm, marker = "*")
+plt.scatter(x = iris.Id, y = iris.SepalWidthCm, marker = "v")
+plt.scatter(x = iris.Id, y = iris.PetalLengthCm, marker = "D")
+plt.scatter(x = iris.Id, y = iris.PetalWidthCm, marker = "o")
+
+
+fig.legend(labels=['SepalLengthCm','SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm'])
+
+#sns.countplot(x='Species', data=iris)
+f,ax=plt.subplots(1,2,figsize=(8,5))
+iris['Species'].value_counts().plot.pie(explode=[0.1,0.1,0.1],autopct='%1.1f%%',ax=ax[0],shadow=True)
+ax[0].set_title('Iris Species Count')
+sns.countplot('Species',data=iris,ax=ax[1])
+ax[1].set_title('Iris Species Count')
+plt.show()
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=1,stratify=Y)
+print(f"X_train shape is {X_train.shape}")
+print(f"X_test shape is {X_test.shape}")
+
+print(f"Y_train shape is {Y_train.shape}")
+print(f"Y_test shape is {Y_test.shape}")
+
+import sklearn.tree as tree
+clf_d=tree.DecisionTreeClassifier(random_state=23)
+clf_d.fit(X_train,Y_train)
+
+predictions_d = clf_d.predict(X_test)
+df=pd.DataFrame({'Actual':Y_test, 'Predicted':predictions_d}) 
+#calculating probabilities of predictions
+predict_prob=clf_d.predict_proba(X_test)
+
+df.head() 
+
+predictions_train = clf_d.predict(X_train)
+print('Traning Accuarcy                                 :',clf_d.score(X_train, Y_train))
+print('Accuracy score                                   :',accuracy_score(Y_train, predictions_train))
+print('classification_report                            :')
+print(classification_report(Y_train, predictions_train)) 
+
