@@ -1,0 +1,114 @@
+Task 2 : Exploratory Data Analysis (Retail)
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+import warnings
+warnings.filterwarnings("ignore")
+
+data=pd.read_csv('SampleSuperstore.csv')
+data.head()
+
+data.shape
+data.info()
+data['Country'].value_counts()
+#drop country and postal code since all the data are from United States
+data.drop(['Country','Postal Code'],inplace=True, axis=1)
+data.isnull().sum()
+figure_1=data.corr()
+sns.heatmap(figure_1,annot=True)
+fig, ax =plt.subplots(1,3,figsize=(17,5))
+sns.barplot(x='Region', y='Sales', data = data,ax=ax[0])
+sns.barplot(x='Region', y='Profit', data = data,ax=ax[1])
+sns.barplot(x='Region', y='Discount', data = data,ax=ax[2])
+plt.show()
+fig,ax=plt.subplots(1,3,figsize=(17,5))
+sns.barplot(x='Category', y='Sales', data = data,ax=ax[0])
+sns.barplot(x='Category', y='Profit', data = data,ax=ax[1])
+sns.barplot(x='Category', y='Discount', data = data,ax=ax[2])
+plt.show()
+fig,ax=plt.subplots(1,3,figsize=(17,5))
+sns.barplot(x='Segment', y='Sales', data = data,ax=ax[0])
+sns.barplot(x='Segment', y='Profit', data = data,ax=ax[1])
+sns.barplot(x='Segment', y='Discount', data = data,ax=ax[2])
+
+fig,ax=plt.subplots(1,3,figsize=(17,5))
+sns.barplot(x='Ship Mode', y='Sales', data = data,ax=ax[0])
+sns.barplot(x='Ship Mode', y='Profit', data = data,ax=ax[1])
+sns.barplot(x='Ship Mode', y='Discount', data = data,ax=ax[2])
+
+fig,ax=plt.subplots(1,3,figsize=(17,5))
+sns.barplot(x='Quantity', y='Sales', data = data,ax=ax[0])
+sns.barplot(x='Quantity', y='Profit', data = data,ax=ax[1])
+sns.barplot(x='Quantity', y='Discount', data = data,ax=ax[2])
+
+data_state= data.groupby(['State'])[['Discount']].sum().sort_values("Discount", ascending=False) 
+data_state.reset_index(inplace=True)
+plt.figure(figsize=(15,5))
+plt.xticks(rotation=90),sns.barplot(x='State', y='Discount', data = data_state)
+plt.show()
+
+data_state= data.groupby(['State'])[['Sales', 'Profit']].sum()
+data_state.sort_values("Profit", ascending=False).plot(kind = 'bar', figsize = (20,8))
+plt.title('State wise- Sales Vs Profit', fontsize = 20)
+plt.ylabel('Profit per State')
+plt.xlabel('States')
+plt.show()
+
+state = ['Alabama', 'Arizona' ,'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 
+         'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
+         'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana','Nebraska', 'Nevada', 'New Hampshire',
+         'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+         'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+         'West Virginia', 'Wisconsin','Wyoming']
+state_code = ['AL','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA',
+              'MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN',
+              'TX','UT','VT','VA','WA','WV','WI','WY']
+state_df = pd.DataFrame(state, state_code) # Create a dataframe
+state_df.reset_index(level=0, inplace=True)
+state_df.columns = ['State Code','State']
+sales = data.groupby(["State"]).sum().sort_values("Sales", ascending=False)
+sales.reset_index(level=0, inplace=True)
+sales= sales.sort_values('State', ascending=True)
+sales.reset_index(inplace = True)
+sales.drop('index',1,inplace = True)
+sales.insert(1, 'State Code', state_df['State Code'])
+
+Profit = data.groupby(["State"]).sum().sort_values("Profit", ascending=False)
+Profit.reset_index(level=0, inplace=True)
+Profit= Profit.sort_values('State', ascending=True)
+Profit.reset_index(inplace = True)
+Profit.drop('index',1,inplace = True)
+Profit.insert(1, 'State Code', state_df['State Code'])
+
+Discount = data.groupby(["State"]).sum().sort_values("Discount", ascending=False)
+Discount.reset_index(level=0, inplace=True)
+Discount= Discount.sort_values('State', ascending=True)
+Discount.reset_index(inplace = True)
+Discount.drop('index',1,inplace = True)
+Discount.insert(1, 'State Code', state_df['State Code'])
+
+import plotly.graph_objects as go
+from plotly.offline import init_notebook_mode, plot_mpl
+
+sales['text'] = sales['State']
+fig = go.Figure(data=go.Choropleth(locations=sales['State Code'], text=sales['text'],z = sales['Sales'].astype(float),
+    locationmode = 'USA-states', colorscale = 'Reds',colorbar_title = "Sales"))
+fig.update_layout(title_text = 'Sales in Different States',geo_scope='usa', )
+fig.show()
+
+Profit['text'] = Profit['State']
+fig = go.Figure(data=go.Choropleth(locations=Profit['State Code'], text=Profit['text'],z = Profit['Profit'].astype(float),
+    locationmode = 'USA-states', colorscale = 'emrld',colorbar_title = "Profits"))
+fig.update_layout(title_text = 'Profits in Different States',geo_scope='usa', )
+fig.show()
+
+Discount['text'] = Discount['State']
+fig = go.Figure(data=go.Choropleth(locations=Discount['State Code'], text=Discount['text'],z = Discount['Discount'].astype(float),
+    locationmode = 'USA-states', colorscale = 'magenta',colorbar_title = "Discounts"))
+fig.update_layout(title_text = 'Discounts in Different States',geo_scope='usa', )
+fig.show()
+px.scatter(data_frame=data, x='State', y='Sales', size='Sales', color='Category')
+
+px.scatter(data_frame=data, x='State', y='Sales', size='Sales', color='Segment')
