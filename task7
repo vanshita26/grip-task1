@@ -1,0 +1,105 @@
+Task 7 : Stock Market Prediction using numerical & textual analysis
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import datetime
+import pandas_datareader.data as web
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.filterwarnings('ignore')
+from sklearn.metrics import mean_squared_error, mean_absolute_error,r2_score
+from textblob import TextBlob
+from matplotlib import rcParams
+import plotly.express as px
+from wordcloud import WordCloud, STOPWORDS
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+from statsmodels.tsa.stattools import adfuller
+import pmdarima as pmd
+
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
+import xgboost 
+import lightgbm
+
+start = datetime.datetime(2010, 1, 1)
+end = datetime.datetime.today()
+stocks = web.DataReader("AAPL", 'yahoo', start, end)
+stocks.info()
+
+plt.figure(figsize=(5,5))
+plt.title('Closing Price of Stocks', fontsize = 18)
+plt.xlabel('Days', fontsize= 18)
+plt.ylabel('Close', fontsize = 18)
+plt.plot(stocks['Close'])
+plt.show()
+
+plt.figure(figsize=(5,5))
+plt.grid(True)
+plt.plot(stocks['Open'])
+plt.xlabel('Days')
+plt.ylabel('Open Price')
+plt.title('Opening price of Stocks')
+plt.show()
+
+close = stocks['Close']
+returns = close / close.shift(1) - 1
+
+plt.figure(figsize = (10,6))
+returns.plot(label='Return', color = 'g')
+plt.title("Stock Returns")
+
+def adfullerTest(X):
+    result = adfuller(X,autolag = 'AIC')
+    print('ADF Statistic: %f' % result[0])
+    print('p-value: %f' % result[1])
+    print('No of Lags Used: %f' % result[2])
+    print('Number of Obs Used: %f' % result[3])
+    print('Critical Values:')
+    for key, value in result[4].items():
+        print('\t%s: %.3f' % (key, value))
+    if result[1] <=0.05 :
+         print("Reject against the null hypothesis, time series is stationary")
+    else:
+        print("Accept null hypothesis, time series is non-stationary ") 
+adfullerTest(train['Close'])
+
+rolling_mean_50 = (train['Close']).rolling(window=50).mean()
+rolling_std_50 = (train['Close']).rolling(window=50).std()
+plt.figure(figsize = (8,8))
+plt.plot((train['Close']), color = 'blue', label = 'original')
+plt.plot(rolling_mean_50, color = 'red', label = 'rolling mean 50')
+plt.plot(rolling_std_50, color = 'black', label = 'rolling std 50')
+plt.xlabel('Time')
+plt.legend()
+plt.title('Mean and Standard Deviation on  transformed data',  fontsize = 20)
+
+rolling_mean_50 = log(train['Close']).rolling(window=50).mean()
+rolling_std_50 = log(train['Close']).rolling(window=50).std()
+plt.figure(figsize = (8,8))
+plt.plot(log(train['Close']), color = 'g', label = 'Log Transformed')
+plt.plot(rolling_mean_50, color = 'r', label = 'rolling mean 50')
+plt.plot(rolling_std_50, color = 'r', label = 'rolling std 50')
+plt.xlabel('Time')
+plt.legend()
+plt.title('Mean and Standard Deviation on Log transformed data',  fontsize = 20)
+
+Predictions on test data
+
+predict_ClosePrice = stocks_arima.predict(n_periods = len(test_log))
+predict_ClosePrice = pd.DataFrame(predict_ClosePrice,index = test_log.index,columns=['predict_ClosePrice'])
+plt.plot(train_log, label='Train')
+plt.plot(test_log, label='Test')
+plt.plot(predict_ClosePrice, label='Prediction')
+plt.title(' Stock Price Prediction')
+plt.xlabel('Time')
+plt.ylabel('Actual Stock Price')
+
+Validation of the Arima Model
+print('Mean Squared Error      ',mean_squared_error(test_log, predict_ClosePrice))
+print('Root Mean_Squared_Error ',np.sqrt(mean_squared_error(test_log, predict_ClosePrice)))
+print('Mean Absolute Error     ',mean_absolute_error(test_log, predict_ClosePrice))
+print('R-Squared               ',r2_score(test_log, predict_ClosePrice))
+
